@@ -38,22 +38,25 @@ public class Board {
 
     public void movePiece(int fromRow, int fromCol, int toRow, int toCol) {
         Piece piece = grid[fromRow][fromCol];
+        if (piece == null) return;
+        
         grid[fromRow][fromCol] = null;
         grid[toRow][toCol] = piece;
         piece.setPosition(toRow, toCol);
 
         // Promotion en dame si le pion atteint la dernière rangée
         if (piece instanceof Pawn) {
-            if ((piece.getColor().equals("white") && toRow == 0)) {
-                grid[toRow][toCol] = new Queen("white", toRow, toCol);
-            } else if (piece.getColor().equals("black") && toRow == SIZE - 1) {
-                grid[toRow][toCol] = new Queen("black", toRow, toCol);
+            if ((piece.getColor().equals("white") && toRow == 0) || 
+                (piece.getColor().equals("black") && toRow == SIZE - 1)) {
+                grid[toRow][toCol] = new Queen(piece.getColor(), toRow, toCol);
             }
         }
     }
 
     public void capturePiece(int row, int col) {
-        grid[row][col] = null;
+        if (row >= 0 && row < SIZE && col >= 0 && col < SIZE) {
+            grid[row][col] = null;
+        }
     }
 
     public boolean hasMandatoryCaptures(String color) {
@@ -62,9 +65,12 @@ public class Board {
                 Piece piece = grid[row][col];
                 if (piece != null && piece.getColor().equals(color)) {
                     // Vérifier les 4 directions possibles pour une capture
-                    for (int rowDir = -2; rowDir <= 2; rowDir += 4) {
-                        for (int colDir = -2; colDir <= 2; colDir += 4) {
-                            if (piece.canCapture(row + rowDir, col + colDir, this)) {
+                    int[][] directions = {{2,2}, {2,-2}, {-2,2}, {-2,-2}};
+                    for (int[] dir : directions) {
+                        int newRow = row + dir[0];
+                        int newCol = col + dir[1];
+                        if (newRow >= 0 && newRow < SIZE && newCol >= 0 && newCol < SIZE) {
+                            if (piece.canCapture(newRow, newCol, this)) {
                                 return true;
                             }
                         }

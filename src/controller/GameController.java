@@ -41,7 +41,13 @@ public class GameController {
                 int row = e.getY() / view.getCellSize();
                 int col = e.getX() / view.getCellSize();
 
+                // Vérifier que les coordonnées sont valides
+                if (row < 0 || row >= model.Board.SIZE || col < 0 || col >= model.Board.SIZE) {
+                    return;
+                }
+
                 if (selectedRow == -1 && selectedCol == -1) {
+                    // Sélection d'une pièce
                     if (isPlayerPiece(row, col)) {
                         selectedRow = row;
                         selectedCol = col;
@@ -49,6 +55,7 @@ public class GameController {
                         view.drawBoard(game.getBoard());
                     }
                 } else {
+                    // Tentative de déplacement
                     if (game.makeMove(selectedRow, selectedCol, row, col)) {
                         view.resetSelection();
                         selectedRow = -1;
@@ -62,6 +69,7 @@ public class GameController {
                             computerTurn();
                         }
                     } else {
+                        // Si le déplacement échoue, soit sélectionner une autre pièce, soit annuler
                         if (isPlayerPiece(row, col)) {
                             selectedRow = row;
                             selectedCol = col;
@@ -126,9 +134,12 @@ public class GameController {
                                 int newRow = row + dir[0];
                                 int newCol = col + dir[1];
                                 
-                                if (game.makeMove(row, col, newRow, newCol)) {
-                                    moveMade = true;
-                                    break;
+                                if (newRow >= 0 && newRow < model.Board.SIZE && 
+                                    newCol >= 0 && newCol < model.Board.SIZE) {
+                                    if (game.makeMove(row, col, newRow, newCol)) {
+                                        moveMade = true;
+                                        break;
+                                    }
                                 }
                             }
                         }

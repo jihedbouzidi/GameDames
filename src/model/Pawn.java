@@ -18,15 +18,20 @@ public class Pawn extends Piece {
         }
 
         int rowDiff = toRow - row;
-        int colDiff = toCol - col;
+        int colDiff = Math.abs(toCol - col);
+
+        // Le déplacement doit être d'une case en diagonale
+        if (colDiff != 1 || Math.abs(rowDiff) != 1) {
+            return false;
+        }
 
         // Pour un pion blanc (qui se déplace vers le haut)
         if (color.equals("white")) {
-            return (rowDiff == -1 && Math.abs(colDiff) == 1);
+            return (rowDiff == -1);
         } 
         // Pour un pion noir (qui se déplace vers le bas)
         else {
-            return (rowDiff == 1 && Math.abs(colDiff) == 1);
+            return (rowDiff == 1);
         }
     }
 
@@ -43,12 +48,12 @@ public class Pawn extends Piece {
         }
 
         int rowDiff = toRow - row;
-        int colDiff = toCol - col;
+        int colDiff = Math.abs(toCol - col);
 
         // Pour une capture, le déplacement doit être de 2 cases en diagonale
-        if (Math.abs(rowDiff) == 2 && Math.abs(colDiff) == 2) {
+        if (Math.abs(rowDiff) == 2 && colDiff == 2) {
             int middleRow = row + rowDiff / 2;
-            int middleCol = col + colDiff / 2;
+            int middleCol = col + (toCol - col) / 2;
             
             Piece middlePiece = board.getPiece(middleRow, middleCol);
             

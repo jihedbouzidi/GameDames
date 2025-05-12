@@ -16,6 +16,12 @@ public class Game {
     }
 
     public boolean makeMove(int fromRow, int fromCol, int toRow, int toCol) {
+        // Vérifier que les coordonnées sont valides
+        if (fromRow < 0 || fromRow >= Board.SIZE || fromCol < 0 || fromCol >= Board.SIZE ||
+            toRow < 0 || toRow >= Board.SIZE || toCol < 0 || toCol >= Board.SIZE) {
+            return false;
+        }
+
         Piece piece = board.getPiece(fromRow, fromCol);
         
         // Vérifications de base
