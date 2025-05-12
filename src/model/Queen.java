@@ -6,25 +6,34 @@ public class Queen extends Piece {
     }
 
     @Override
+    protected int[][] getCaptureDirections() {
+        return new int[][]{{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
+    }
+
+    @Override
+    protected int[][] getMoveDirections() {
+        return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+    }
+
+    @Override
     public boolean isValidMove(int toRow, int toCol, Board board) {
-        // Vérifier si le déplacement est dans les limites du plateau
         if (toRow < 0 || toRow >= Board.SIZE || toCol < 0 || toCol >= Board.SIZE) {
             return false;
         }
 
-        // Vérifier si la case de destination est vide
         if (board.getPiece(toRow, toCol) != null) {
             return false;
         }
 
-        // Vérifier que le déplacement est diagonal
-        if (Math.abs(toRow - row) != Math.abs(toCol - col)) {
+        int rowDiff = toRow - row;
+        int colDiff = toCol - col;
+
+        if (Math.abs(rowDiff) != Math.abs(colDiff)) {
             return false;
         }
 
-        // Vérifier qu'il n'y a pas de pièces sur le chemin
-        int rowStep = (toRow > row) ? 1 : -1;
-        int colStep = (toCol > col) ? 1 : -1;
+        int rowStep = rowDiff > 0 ? 1 : -1;
+        int colStep = colDiff > 0 ? 1 : -1;
         
         int currentRow = row + rowStep;
         int currentCol = col + colStep;
@@ -42,23 +51,23 @@ public class Queen extends Piece {
 
     @Override
     public boolean canCapture(int toRow, int toCol, Board board) {
-        // Vérifier si le déplacement est dans les limites du plateau
         if (toRow < 0 || toRow >= Board.SIZE || toCol < 0 || toCol >= Board.SIZE) {
             return false;
         }
 
-        // Vérifier si la case de destination est vide
         if (board.getPiece(toRow, toCol) != null) {
             return false;
         }
 
-        // Vérifier que le déplacement est diagonal
-        if (Math.abs(toRow - row) != Math.abs(toCol - col)) {
+        int rowDiff = toRow - row;
+        int colDiff = toCol - col;
+
+        if (Math.abs(rowDiff) != Math.abs(colDiff)) {
             return false;
         }
 
-        int rowStep = (toRow > row) ? 1 : -1;
-        int colStep = (toCol > col) ? 1 : -1;
+        int rowStep = rowDiff > 0 ? 1 : -1;
+        int colStep = colDiff > 0 ? 1 : -1;
         
         int currentRow = row + rowStep;
         int currentCol = col + colStep;
@@ -69,12 +78,10 @@ public class Queen extends Piece {
             Piece piece = board.getPiece(currentRow, currentCol);
             
             if (piece != null) {
-                // Si on trouve une deuxième pièce sur le chemin, le mouvement est invalide
                 if (capturedPiece != null) {
                     return false;
                 }
                 
-                // Vérifier que la pièce est adverse
                 if (!piece.getColor().equals(color)) {
                     capturedPiece = piece;
                 } else {

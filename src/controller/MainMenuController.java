@@ -41,23 +41,39 @@ public class MainMenuController {
         public void actionPerformed(ActionEvent e) {
             try {
                 // Demander la couleur des pions
-                Object[] options = {"Blancs", "Noirs"};
-                int choice = JOptionPane.showOptionDialog(
+                Object[] colorOptions = {"Blancs", "Noirs"};
+                int colorChoice = JOptionPane.showOptionDialog(
                     view, 
                     "Choisissez la couleur de vos pions", 
                     "Nouvelle Partie", 
                     JOptionPane.DEFAULT_OPTION, 
                     JOptionPane.QUESTION_MESSAGE, 
                     null, 
-                    options, 
-                    options[0]
+                    colorOptions, 
+                    colorOptions[0]
                 );
                 
-                if (choice == JOptionPane.CLOSED_OPTION) {
-                    return;
-                }
+                if (colorChoice == JOptionPane.CLOSED_OPTION) return;
                 
-                String playerColor = (choice == 0) ? "white" : "black";
+                String playerColor = (colorChoice == 0) ? "white" : "black";
+                
+                // Demander la difficulté
+                Object[] difficultyOptions = {"Facile", "Moyenne", "Difficile"};
+                int difficultyChoice = JOptionPane.showOptionDialog(
+                    view, 
+                    "Choisissez la difficulté de l'ordinateur", 
+                    "Nouvelle Partie", 
+                    JOptionPane.DEFAULT_OPTION, 
+                    JOptionPane.QUESTION_MESSAGE, 
+                    null, 
+                    difficultyOptions, 
+                    difficultyOptions[1]
+                );
+                
+                if (difficultyChoice == JOptionPane.CLOSED_OPTION) return;
+                
+                String difficulty = (difficultyChoice == 0) ? "easy" : 
+                                  (difficultyChoice == 1) ? "medium" : "hard";
                 
                 // Demander qui commence
                 Object[] startOptions = {"Moi", "L'ordinateur"};
@@ -72,12 +88,12 @@ public class MainMenuController {
                     startOptions[0]
                 );
                 
-                if (startChoice == JOptionPane.CLOSED_OPTION) {
-                    return;
-                }
+                if (startChoice == JOptionPane.CLOSED_OPTION) return;
+                
+                boolean humanStarts = (startChoice == 0);
                 
                 // Créer la partie et la vue
-                Game game = new Game(playerColor);
+                Game game = new Game(playerColor, difficulty, humanStarts);
                 GameView gameView = new GameView();
                 
                 // Créer le contrôleur de jeu
@@ -87,11 +103,10 @@ public class MainMenuController {
                 gameView.setVisible(true);
                 
                 // Fermer le menu principal
-                view.setVisible(false);
                 view.dispose();
                 
-                if (startChoice == 1) {
-                    // TODO: Implémenter l'IA pour le premier coup
+                if (!humanStarts) {
+                    game.computerTurn();
                 }
                 
             } catch (Exception ex) {

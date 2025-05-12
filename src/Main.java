@@ -1,6 +1,6 @@
-import view.LoginView;
 import controller.LoginController;
 import model.Database;
+import view.LoginView;
 
 public class Main {
     public static void main(String[] args) {

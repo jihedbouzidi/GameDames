@@ -64,16 +64,8 @@ public class Board {
             for (int col = 0; col < SIZE; col++) {
                 Piece piece = grid[row][col];
                 if (piece != null && piece.getColor().equals(color)) {
-                    // Vérifier les 4 directions possibles pour une capture
-                    int[][] directions = {{2,2}, {2,-2}, {-2,2}, {-2,-2}};
-                    for (int[] dir : directions) {
-                        int newRow = row + dir[0];
-                        int newCol = col + dir[1];
-                        if (newRow >= 0 && newRow < SIZE && newCol >= 0 && newCol < SIZE) {
-                            if (piece.canCapture(newRow, newCol, this)) {
-                                return true;
-                            }
-                        }
+                    if (piece.hasAvailableCaptures(this)) {
+                        return true;
                     }
                 }
             }
@@ -91,7 +83,7 @@ public class Board {
                 } else if (piece instanceof Pawn) {
                     state[row][col] = piece.getColor();
                 } else if (piece instanceof Queen) {
-                    state[row][col] = piece.getColor() + "_d";
+                    state[row][col] = piece.getColor() + "_queen";
                 }
             }
         }
@@ -107,9 +99,9 @@ public class Board {
                     grid[row][col] = new Pawn("white", row, col);
                 } else if (pieceStr.equals("black")) {
                     grid[row][col] = new Pawn("black", row, col);
-                } else if (pieceStr.equals("white_d")) {
+                } else if (pieceStr.equals("white_queen")) {
                     grid[row][col] = new Queen("white", row, col);
-                } else if (pieceStr.equals("black_d")) {
+                } else if (pieceStr.equals("black_queen")) {
                     grid[row][col] = new Queen("black", row, col);
                 }
             }

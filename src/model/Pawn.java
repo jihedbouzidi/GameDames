@@ -6,13 +6,29 @@ public class Pawn extends Piece {
     }
 
     @Override
+    protected int[][] getCaptureDirections() {
+        if (color.equals("white")) {
+            return new int[][]{{-2, -2}, {-2, 2}};
+        } else {
+            return new int[][]{{2, -2}, {2, 2}};
+        }
+    }
+
+    @Override
+    protected int[][] getMoveDirections() {
+        if (color.equals("white")) {
+            return new int[][]{{-1, -1}, {-1, 1}};
+        } else {
+            return new int[][]{{1, -1}, {1, 1}};
+        }
+    }
+
+    @Override
     public boolean isValidMove(int toRow, int toCol, Board board) {
-        // Vérifier si le déplacement est dans les limites du plateau
         if (toRow < 0 || toRow >= Board.SIZE || toCol < 0 || toCol >= Board.SIZE) {
             return false;
         }
 
-        // Vérifier si la case de destination est vide
         if (board.getPiece(toRow, toCol) != null) {
             return false;
         }
@@ -20,47 +36,39 @@ public class Pawn extends Piece {
         int rowDiff = toRow - row;
         int colDiff = Math.abs(toCol - col);
 
-        // Le déplacement doit être d'une case en diagonale
-        if (colDiff != 1 || Math.abs(rowDiff) != 1) {
+        if (colDiff != 1) {
             return false;
         }
 
-        // Pour un pion blanc (qui se déplace vers le haut)
         if (color.equals("white")) {
-            return (rowDiff == -1);
-        } 
-        // Pour un pion noir (qui se déplace vers le bas)
-        else {
-            return (rowDiff == 1);
+            return rowDiff == -1;
+        } else {
+            return rowDiff == 1;
         }
     }
 
     @Override
     public boolean canCapture(int toRow, int toCol, Board board) {
-        // Vérifier si le déplacement est dans les limites du plateau
         if (toRow < 0 || toRow >= Board.SIZE || toCol < 0 || toCol >= Board.SIZE) {
             return false;
         }
 
-        // Vérifier si la case de destination est vide
         if (board.getPiece(toRow, toCol) != null) {
             return false;
         }
 
         int rowDiff = toRow - row;
-        int colDiff = Math.abs(toCol - col);
+        int colDiff = toCol - col;
 
-        // Pour une capture, le déplacement doit être de 2 cases en diagonale
-        if (Math.abs(rowDiff) == 2 && colDiff == 2) {
-            int middleRow = row + rowDiff / 2;
-            int middleCol = col + (toCol - col) / 2;
-            
-            Piece middlePiece = board.getPiece(middleRow, middleCol);
-            
-            // Vérifier qu'il y a une pièce adverse au milieu
-            return middlePiece != null && !middlePiece.getColor().equals(color);
+        if (Math.abs(rowDiff) != 2 || Math.abs(colDiff) != 2) {
+            return false;
         }
 
-        return false;
+        int middleRow = row + rowDiff / 2;
+        int middleCol = col + colDiff / 2;
+        
+        Piece middlePiece = board.getPiece(middleRow, middleCol);
+        
+        return middlePiece != null && !middlePiece.getColor().equals(color);
     }
 }
