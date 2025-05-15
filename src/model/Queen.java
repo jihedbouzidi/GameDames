@@ -79,13 +79,13 @@ public class Queen extends Piece {
             
             if (piece != null) {
                 if (capturedPiece != null) {
-                    return false;
+                    return false; // Plus d'une pièce sur la diagonale
                 }
                 
                 if (!piece.getColor().equals(color)) {
                     capturedPiece = piece;
                 } else {
-                    return false;
+                    return false; // Pièce de même couleur
                 }
             }
             

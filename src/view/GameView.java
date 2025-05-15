@@ -12,6 +12,7 @@ public class GameView extends JFrame {
     private static final int CELL_SIZE = 60;
     private static final Color LIGHT_COLOR = new Color(240, 217, 181);
     private static final Color DARK_COLOR = new Color(181, 136, 99);
+    private static final Color HIGHLIGHT_COLOR = new Color(255, 255, 0, 100);
     
     private JPanel boardPanel;
     private JLabel statusLabel;
@@ -19,6 +20,7 @@ public class GameView extends JFrame {
     private JButton quitButton;
     private int selectedRow = -1;
     private int selectedCol = -1;
+    private boolean[][] possibleMoves = new boolean[Board.SIZE][Board.SIZE];
 
     // Icônes pour les pièces
     private ImageIcon whitePawnIcon;
@@ -42,7 +44,25 @@ public class GameView extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        boardPanel = new JPanel(new GridLayout(Board.SIZE, Board.SIZE));
+        boardPanel = new JPanel(new GridLayout(Board.SIZE, Board.SIZE)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                // Dessiner les cases possibles
+                if (selectedRow != -1 && selectedCol != -1) {
+                    for (int row = 0; row < Board.SIZE; row++) {
+                        for (int col = 0; col < Board.SIZE; col++) {
+                            if (possibleMoves[row][col]) {
+                                Graphics2D g2d = (Graphics2D) g.create();
+                                g2d.setColor(HIGHLIGHT_COLOR);
+                                g2d.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                                g2d.dispose();
+                            }
+                        }
+                    }
+                }
+            }
+        };
         boardPanel.setPreferredSize(new Dimension(Board.SIZE * CELL_SIZE, Board.SIZE * CELL_SIZE));
         
         statusLabel = new JLabel(" ", SwingConstants.CENTER);
@@ -94,7 +114,7 @@ public class GameView extends JFrame {
         if (isQueen) {
             g2.setColor(color.equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
             g2.setFont(new Font("Arial", Font.BOLD, 20));
-            String crown = color.equals(Color.WHITE) ? "♕" : "♛";
+            String crown = color.equals(Color.WHITE) ? "•" : "•";
             g2.drawString(crown, (CELL_SIZE-10)/2-8, (CELL_SIZE-10)/2+8);
         }
         
@@ -104,6 +124,24 @@ public class GameView extends JFrame {
     
     public void drawBoard(Board board) {
         boardPanel.removeAll();
+        
+        // Réinitialiser les mouvements possibles
+        possibleMoves = new boolean[Board.SIZE][Board.SIZE];
+        
+        // Si une pièce est sélectionnée, calculer ses mouvements possibles
+        if (selectedRow != -1 && selectedCol != -1) {
+            Piece selectedPiece = board.getPiece(selectedRow, selectedCol);
+            if (selectedPiece != null) {
+                for (int row = 0; row < Board.SIZE; row++) {
+                    for (int col = 0; col < Board.SIZE; col++) {
+                        if (selectedPiece.isValidMove(row, col, board) || 
+                            selectedPiece.canCapture(row, col, board)) {
+                            possibleMoves[row][col] = true;
+                        }
+                    }
+                }
+            }
+        }
         
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {

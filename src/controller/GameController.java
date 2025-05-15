@@ -21,6 +21,7 @@ public class GameController {
         this.db = db;
         this.player = player;
         this.game = game;
+        game.setView(view);
         
         initView();
         initListeners();

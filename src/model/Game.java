@@ -105,15 +105,17 @@ public class Game {
     }
 
     private void makeRandomMove() {
+        // D'abord essayer les captures
+        if (tryToCapture()) {
+            return;
+        }
+        
+        // Sinon faire un mouvement aléatoire
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
                 if (piece != null && piece.getColor().equals(currentPlayer)) {
-                    int[][] directions = piece instanceof Queen ? 
-                        new int[][]{{1,1}, {1,-1}, {-1,1}, {-1,-1}} :
-                        currentPlayer.equals("white") ? 
-                            new int[][]{{-1,-1}, {-1,1}} : 
-                            new int[][]{{1,-1}, {1,1}};
+                    int[][] directions = piece.getMoveDirections();
                     
                     for (int[] dir : directions) {
                         int newRow = row + dir[0];
@@ -124,20 +126,11 @@ public class Game {
                                 return;
                             }
                         }
-                        
-                        // Try captures
-                        int captureRow = row + 2*dir[0];
-                        int captureCol = col + 2*dir[1];
-                        if (captureRow >= 0 && captureRow < Board.SIZE && captureCol >= 0 && captureCol < Board.SIZE) {
-                            if (makeComputerMove(row, col, captureRow, captureCol)) {
-                                return;
-                            }
-                        }
                     }
                 }
             }
         }
-        switchPlayer(); // If no move is possible, skip the turn
+        switchPlayer(); // Si aucun mouvement n'est possible, passer le tour
     }
 
     private boolean makeComputerMove(int fromRow, int fromCol, int toRow, int toCol) {
@@ -167,50 +160,22 @@ public class Game {
     }
 
     private void makeMediumMove() {
-        // First, try to capture
-        for (int row = 0; row < Board.SIZE; row++) {
-            for (int col = 0; col < Board.SIZE; col++) {
-                Piece piece = board.getPiece(row, col);
-                if (piece != null && piece.getColor().equals(currentPlayer)) {
-                    int[][] directions = piece instanceof Queen ? 
-                        new int[][]{{2,2}, {2,-2}, {-2,2}, {-2,-2}} :
-                        currentPlayer.equals("white") ? 
-                            new int[][]{{-2,-2}, {-2,2}} : 
-                            new int[][]{{2,-2}, {2,2}};
-                    
-                    for (int[] dir : directions) {
-                        int newRow = row + dir[0];
-                        int newCol = col + dir[1];
-                        
-                        if (newRow >= 0 && newRow < Board.SIZE && newCol >= 0 && newCol < Board.SIZE) {
-                            if (makeComputerMove(row, col, newRow, newCol)) {
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // If no capture is possible, make a random move
-        makeRandomMove();
-    }
-
-    private void makeHardMove() {
-        // First try to capture
+        // D'abord essayer les captures
         if (tryToCapture()) {
             return;
         }
-        // Try to promote a pawn
+        
+        // Ensuite essayer de promouvoir un pion
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
                 if (piece instanceof Pawn && piece.getColor().equals(currentPlayer)) {
-                    if (currentPlayer.equals("white")) {
+                    if (currentPlayer.equals("white") && row == 1) {
                         if (makeComputerMove(row, col, row-1, col-1) || 
                             makeComputerMove(row, col, row-1, col+1)) {
                             return;
                         }
-                    } else {
+                    } else if (currentPlayer.equals("black") && row == Board.SIZE-2) {
                         if (makeComputerMove(row, col, row+1, col-1) || 
                             makeComputerMove(row, col, row+1, col+1)) {
                             return;
@@ -220,8 +185,43 @@ public class Game {
             }
         }
         
-        // If nothing else, make a random move
+        // Sinon faire un mouvement aléatoire
         makeRandomMove();
+    }
+
+    private void makeHardMove() {
+        // D'abord essayer les captures multiples
+        if (tryMultipleCaptures()) {
+            return;
+        }
+        
+        // Ensuite essayer les captures simples
+        if (tryToCapture()) {
+            return;
+        }
+        
+        // Ensuite essayer de promouvoir un pion
+        for (int row = 0; row < Board.SIZE; row++) {
+            for (int col = 0; col < Board.SIZE; col++) {
+                Piece piece = board.getPiece(row, col);
+                if (piece instanceof Pawn && piece.getColor().equals(currentPlayer)) {
+                    if (currentPlayer.equals("white") && row == 1) {
+                        if (makeComputerMove(row, col, row-1, col-1) || 
+                            makeComputerMove(row, col, row-1, col+1)) {
+                            return;
+                        }
+                    } else if (currentPlayer.equals("black") && row == Board.SIZE-2) {
+                        if (makeComputerMove(row, col, row+1, col-1) || 
+                            makeComputerMove(row, col, row+1, col+1)) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Sinon faire un mouvement stratégique
+        makeStrategicMove();
     }
 
     private boolean tryToCapture() {
@@ -229,16 +229,10 @@ public class Game {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
                 if (piece != null && piece.getColor().equals(currentPlayer)) {
-                    int[][] directions = piece instanceof Queen ? 
-                        new int[][]{{2,2}, {2,-2}, {-2,2}, {-2,-2}} :
-                        currentPlayer.equals("white") ? 
-                            new int[][]{{-2,-2}, {-2,2}} : 
-                            new int[][]{{2,-2}, {2,2}};
-                    
+                    int[][] directions = piece.getCaptureDirections();
                     for (int[] dir : directions) {
                         int newRow = row + dir[0];
                         int newCol = col + dir[1];
-                        
                         if (newRow >= 0 && newRow < Board.SIZE && newCol >= 0 && newCol < Board.SIZE) {
                             if (makeComputerMove(row, col, newRow, newCol)) {
                                 return true;
@@ -249,6 +243,17 @@ public class Game {
             }
         }
         return false;
+    }
+
+    private boolean tryMultipleCaptures() {
+        // Implémentation des captures multiples
+        // (plus complexe, nécessite de parcourir toutes les possibilités)
+        return false;
+    }
+
+    private void makeStrategicMove() {
+        // Implémentation des mouvements stratégiques
+        makeMediumMove();
     }
 
     private void checkGameOver() {
