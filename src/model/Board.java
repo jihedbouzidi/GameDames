@@ -6,24 +6,43 @@ public class Board {
 
     public Board() {
         grid = new Piece[SIZE][SIZE];
-        initializeBoard();
     }
 
-    private void initializeBoard() {
-        // Placement des pions noirs
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < SIZE; col++) {
-                if ((row + col) % 2 == 1) {
-                    grid[row][col] = new Pawn("black", row, col);
+    public void initializeBoard(String humanColor) {
+        grid = new Piece[SIZE][SIZE];
+        
+        if (humanColor.equals("white")) {
+            // Pions noirs (adversaire) en haut
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < SIZE; col++) {
+                    if ((row + col) % 2 == 1) {
+                        grid[row][col] = new Pawn("black", row, col);
+                    }
                 }
             }
-        }
-
-        // Placement des pions blancs
-        for (int row = 6; row < SIZE; row++) {
-            for (int col = 0; col < SIZE; col++) {
-                if ((row + col) % 2 == 1) {
-                    grid[row][col] = new Pawn("white", row, col);
+            // Pions blancs (joueur) en bas
+            for (int row = 6; row < SIZE; row++) {
+                for (int col = 0; col < SIZE; col++) {
+                    if ((row + col) % 2 == 1) {
+                        grid[row][col] = new Pawn("white", row, col);
+                    }
+                }
+            }
+        } else {
+            // Pions blancs (adversaire) en haut
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < SIZE; col++) {
+                    if ((row + col) % 2 == 1) {
+                        grid[row][col] = new Pawn("white", row, col);
+                    }
+                }
+            }
+            // Pions noirs (joueur) en bas
+            for (int row = 6; row < SIZE; row++) {
+                for (int col = 0; col < SIZE; col++) {
+                    if ((row + col) % 2 == 1) {
+                        grid[row][col] = new Pawn("black", row, col);
+                    }
                 }
             }
         }
@@ -44,7 +63,7 @@ public class Board {
         grid[toRow][toCol] = piece;
         piece.setPosition(toRow, toCol);
 
-        // Promotion en dame si le pion atteint la dernière rangée
+        // Promotion en dame
         if (piece instanceof Pawn) {
             if ((piece.getColor().equals("white") && toRow == 0) || 
                 (piece.getColor().equals("black") && toRow == SIZE - 1)) {

@@ -7,7 +7,7 @@ public class Queen extends Piece {
 
     @Override
     protected int[][] getCaptureDirections() {
-        return new int[][]{{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
+        return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
     }
 
     @Override
@@ -73,19 +73,22 @@ public class Queen extends Piece {
         int currentCol = col + colStep;
         
         Piece capturedPiece = null;
+        int captureRow = -1, captureCol = -1;
         
         while (currentRow != toRow && currentCol != toCol) {
             Piece piece = board.getPiece(currentRow, currentCol);
             
             if (piece != null) {
                 if (capturedPiece != null) {
-                    return false; // Plus d'une pièce sur la diagonale
+                    return false;
                 }
                 
                 if (!piece.getColor().equals(color)) {
                     capturedPiece = piece;
+                    captureRow = currentRow;
+                    captureCol = currentCol;
                 } else {
-                    return false; // Pièce de même couleur
+                    return false;
                 }
             }
             
@@ -94,5 +97,22 @@ public class Queen extends Piece {
         }
 
         return capturedPiece != null;
+    }
+
+    @Override
+    public boolean hasAvailableCaptures(Board board) {
+        for (int[] dir : getCaptureDirections()) {
+            int newRow = row + dir[0];
+            int newCol = col + dir[1];
+            
+            while (newRow >= 0 && newRow < Board.SIZE && newCol >= 0 && newCol < Board.SIZE) {
+                if (canCapture(newRow, newCol, board)) {
+                    return true;
+                }
+                newRow += dir[0];
+                newCol += dir[1];
+            }
+        }
+        return false;
     }
 }

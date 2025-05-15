@@ -40,7 +40,7 @@ public class MainMenuController {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                // Demander la couleur des pions
+                // Choix de la couleur
                 Object[] colorOptions = {"Blancs", "Noirs"};
                 int colorChoice = JOptionPane.showOptionDialog(
                     view, 
@@ -57,7 +57,7 @@ public class MainMenuController {
                 
                 String playerColor = (colorChoice == 0) ? "white" : "black";
                 
-                // Demander la difficulté
+                // Choix de la difficulté
                 Object[] difficultyOptions = {"Facile", "Moyenne", "Difficile"};
                 int difficultyChoice = JOptionPane.showOptionDialog(
                     view, 
@@ -75,39 +75,14 @@ public class MainMenuController {
                 String difficulty = (difficultyChoice == 0) ? "easy" : 
                                   (difficultyChoice == 1) ? "medium" : "hard";
                 
-                // Demander qui commence
-                Object[] startOptions = {"Moi", "L'ordinateur"};
-                int startChoice = JOptionPane.showOptionDialog(
-                    view, 
-                    "Qui doit commencer?", 
-                    "Nouvelle Partie", 
-                    JOptionPane.DEFAULT_OPTION, 
-                    JOptionPane.QUESTION_MESSAGE, 
-                    null, 
-                    startOptions, 
-                    startOptions[0]
-                );
-                
-                if (startChoice == JOptionPane.CLOSED_OPTION) return;
-                
-                boolean humanStarts = (startChoice == 0);
-                
-                // Créer la partie et la vue
-                Game game = new Game(playerColor, difficulty, humanStarts);
+                // Création de la partie
+                Game game = new Game(playerColor, difficulty, true);
                 GameView gameView = new GameView();
                 
-                // Créer le contrôleur de jeu
                 new GameController(gameView, db, player, game);
                 
-                // Afficher la vue du jeu
                 gameView.setVisible(true);
-                
-                // Fermer le menu principal
                 view.dispose();
-                
-                if (!humanStarts) {
-                    game.computerTurn();
-                }
                 
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(

@@ -22,11 +22,16 @@ public class Game {
         this.gameOver = false;
         this.winner = null;
         this.difficulty = difficulty;
-        this.isHumanTurn = humanStarts == (humanPlayerColor.equals("white"));
+        this.isHumanTurn = humanPlayerColor.equals("white");
+        
+        board.initializeBoard(humanPlayerColor);
     }
 
     public void setView(GameView view) {
         this.view = view;
+        if (!isHumanTurn) {
+            computerTurn();
+        }
     }
 
     public boolean makeMove(int fromRow, int fromCol, int toRow, int toCol) {
@@ -49,7 +54,6 @@ public class Game {
                 board.movePiece(fromRow, fromCol, toRow, toCol);
                 board.capturePiece(middleRow, middleCol);
                 
-                // Vérifier si d'autres captures sont possibles avec la même pièce
                 if (!piece.hasAvailableCaptures(board)) {
                     switchPlayer();
                 }
@@ -78,7 +82,7 @@ public class Game {
     public void computerTurn() {
         new Thread(() -> {
             try {
-                Thread.sleep(1000); // Pause to allow the human player to see the move
+                Thread.sleep(1000);
                 
                 switch (difficulty) {
                     case "easy":
@@ -105,12 +109,8 @@ public class Game {
     }
 
     private void makeRandomMove() {
-        // D'abord essayer les captures
-        if (tryToCapture()) {
-            return;
-        }
+        if (tryToCapture()) return;
         
-        // Sinon faire un mouvement aléatoire
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
@@ -130,7 +130,7 @@ public class Game {
                 }
             }
         }
-        switchPlayer(); // Si aucun mouvement n'est possible, passer le tour
+        switchPlayer();
     }
 
     private boolean makeComputerMove(int fromRow, int fromCol, int toRow, int toCol) {
@@ -160,12 +160,8 @@ public class Game {
     }
 
     private void makeMediumMove() {
-        // D'abord essayer les captures
-        if (tryToCapture()) {
-            return;
-        }
+        if (tryToCapture()) return;
         
-        // Ensuite essayer de promouvoir un pion
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
@@ -184,23 +180,13 @@ public class Game {
                 }
             }
         }
-        
-        // Sinon faire un mouvement aléatoire
         makeRandomMove();
     }
 
     private void makeHardMove() {
-        // D'abord essayer les captures multiples
-        if (tryMultipleCaptures()) {
-            return;
-        }
+        if (tryMultipleCaptures()) return;
+        if (tryToCapture()) return;
         
-        // Ensuite essayer les captures simples
-        if (tryToCapture()) {
-            return;
-        }
-        
-        // Ensuite essayer de promouvoir un pion
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
@@ -219,9 +205,7 @@ public class Game {
                 }
             }
         }
-        
-        // Sinon faire un mouvement stratégique
-        makeStrategicMove();
+        makeMediumMove();
     }
 
     private boolean tryToCapture() {
@@ -246,14 +230,7 @@ public class Game {
     }
 
     private boolean tryMultipleCaptures() {
-        // Implémentation des captures multiples
-        // (plus complexe, nécessite de parcourir toutes les possibilités)
         return false;
-    }
-
-    private void makeStrategicMove() {
-        // Implémentation des mouvements stratégiques
-        makeMediumMove();
     }
 
     private void checkGameOver() {
