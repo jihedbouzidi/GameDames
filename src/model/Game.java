@@ -24,7 +24,6 @@ public class Game {
         this.winner = null;
         this.difficulty = difficulty;
         
-        // White always starts
         this.currentPlayer = "white";
         this.isHumanTurn = humanPlayerColor.equals("white");
         
@@ -34,7 +33,7 @@ public class Game {
     public void setView(GameView view) {
         this.view = view;
         updateStatus();
-        if (!isHumanTurn) {
+        if (!isHumanTurn && !gameOver) {
             computerTurn();
         }
     }
@@ -51,30 +50,29 @@ public class Game {
 
         boolean mandatoryCaptures = board.hasMandatoryCaptures(currentPlayer);
         
-        if (mandatoryCaptures && piece.canCapture(toRow, toCol, board)) {
-            // Handle capture
-            if (piece instanceof Queen) {
-                // Queen capture: find the captured piece
-                int[] capturedPos = findCapturedPieceForQueen(fromRow, fromCol, toRow, toCol);
-                if (capturedPos != null) {
-                    board.movePiece(fromRow, fromCol, toRow, toCol);
-                    board.capturePiece(capturedPos[0], capturedPos[1]);
+        if (piece.canCapture(toRow, toCol, board)) {
+            if (mandatoryCaptures) {
+                if (piece instanceof Queen) {
+                    int[] capturedPos = findCapturedPieceForQueen(fromRow, fromCol, toRow, toCol);
+                    if (capturedPos != null) {
+                        board.movePiece(fromRow, fromCol, toRow, toCol);
+                        board.capturePiece(capturedPos[0], capturedPos[1]);
+                    }
                 } else {
-                    return false;
+                    int middleRow = (fromRow + toRow) / 2;
+                    int middleCol = (fromCol + toCol) / 2;
+                    board.movePiece(fromRow, fromCol, toRow, toCol);
+                    board.capturePiece(middleRow, middleCol);
                 }
-            } else {
-                // Pawn capture
-                int middleRow = (fromRow + toRow) / 2;
-                int middleCol = (fromCol + toCol) / 2;
-                board.movePiece(fromRow, fromCol, toRow, toCol);
-                board.capturePiece(middleRow, middleCol);
+                
+                // Vérifier si d'autres captures sont possibles
+                Piece movedPiece = board.getPiece(toRow, toCol);
+                if (movedPiece == null || !movedPiece.hasAvailableCaptures(board)) {
+                    switchPlayer();
+                }
+                return true;
             }
-            
-            // Check if more captures are possible with this piece
-            if (!piece.hasAvailableCaptures(board)) {
-                switchPlayer();
-            }
-            return true;
+            return false;
         } else if (!mandatoryCaptures && piece.isValidMove(toRow, toCol, board)) {
             board.movePiece(fromRow, fromCol, toRow, toCol);
             switchPlayer();
@@ -107,28 +105,16 @@ public class Game {
         return null;
     }
 
-    private void switchPlayer() {
-        currentPlayer = currentPlayer.equals("white") ? "black" : "white";
-        isHumanTurn = currentPlayer.equals(humanPlayerColor);
-        checkGameOver();
-        
-        if (!isHumanTurn && !gameOver) {
-            computerTurn();
-        }
-    }
-
     public void computerTurn() {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
                 
-                // Find all possible captures
-                List<Move> captureMoves = findAllCaptures();
-                if (!captureMoves.isEmpty()) {
-                    // Execute a capture sequence
-                    executeCaptureSequence();
+                List<Move> captureSequence = findBestCaptureSequence();
+                if (!captureSequence.isEmpty()) {
+                    executeCaptureSequence(captureSequence);
                 } else {
-                    // No captures, make a normal move
+                    // Pas de captures possibles, faire un mouvement normal
                     switch (difficulty) {
                         case "easy":
                             makeRandomMove();
@@ -147,6 +133,7 @@ public class Game {
                 SwingUtilities.invokeLater(() -> {
                     view.drawBoard(board);
                     updateStatus();
+                    checkGameOver();
                     if (gameOver) {
                         endGame();
                     }
@@ -157,94 +144,70 @@ public class Game {
         }).start();
     }
 
-    private void executeCaptureSequence() {
-        List<Move> sequence = findCaptureSequence();
-        if (sequence.isEmpty()) {
-            switchPlayer();
-            return;
-        }
-
-        for (Move move : sequence) {
-            Piece piece = board.getPiece(move.getFromRow(), move.getFromCol());
-            if (piece instanceof Queen) {
-                int[] capturedPos = findCapturedPieceForQueen(move.getFromRow(), move.getFromCol(), move.getToRow(), move.getToCol());
-                if (capturedPos != null) {
-                    board.movePiece(move.getFromRow(), move.getFromCol(), move.getToRow(), move.getToCol());
-                    board.capturePiece(capturedPos[0], capturedPos[1]);
-                }
-            } else {
-                int middleRow = (move.getFromRow() + move.getToRow()) / 2;
-                int middleCol = (move.getFromCol() + move.getToCol()) / 2;
-                board.movePiece(move.getFromRow(), move.getFromCol(), move.getToRow(), move.getToCol());
-                board.capturePiece(middleRow, middleCol);
-            }
-
-            // Update board visually and wait 1 second
-            SwingUtilities.invokeLater(() -> view.drawBoard(board));
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, e);
-            }
-        }
-        switchPlayer();
-    }
-
-    private List<Move> findCaptureSequence() {
+    private List<Move> findBestCaptureSequence() {
         List<Move> bestSequence = new ArrayList<>();
         String[][] originalState = board.getBoardState();
-
+        
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
                 if (piece != null && piece.getColor().equals(currentPlayer)) {
                     List<Move> currentSequence = new ArrayList<>();
-                    findCaptureSequenceRecursive(piece, row, col, currentSequence, bestSequence);
-                    board.setBoardState(originalState); // Reset board after each piece
+                    findCaptureSequenceRecursive(piece, row, col, currentSequence, bestSequence, originalState);
                 }
             }
         }
+        
         return bestSequence;
     }
 
-    private void findCaptureSequenceRecursive(Piece piece, int row, int col, List<Move> currentSequence, List<Move> bestSequence) {
-        int[][] directions = piece.getCaptureDirections();
+    private void findCaptureSequenceRecursive(Piece piece, int row, int col, 
+                                           List<Move> currentSequence, 
+                                           List<Move> bestSequence,
+                                           String[][] originalState) {
         boolean foundCapture = false;
-        String[][] originalState = board.getBoardState();
-
-        for (int[] dir : directions) {
+        
+        for (int[] dir : piece.getCaptureDirections()) {
             if (piece instanceof Queen) {
-                int newRow = row + dir[0];
-                int newCol = col + dir[1];
-                while (newRow >= 0 && newRow < Board.SIZE && newCol >= 0 && newCol < Board.SIZE) {
+                for (int distance = 1; distance < Board.SIZE; distance++) {
+                    int newRow = row + dir[0] * distance;
+                    int newCol = col + dir[1] * distance;
+                    
+                    if (newRow < 0 || newRow >= Board.SIZE || newCol < 0 || newCol >= Board.SIZE) {
+                        break;
+                    }
+                    
                     if (piece.canCapture(newRow, newCol, board)) {
                         Move move = new Move(row, col, newRow, newCol);
                         currentSequence.add(move);
-
-                        // Simulate the move
-                        int[] capturedPos = findCapturedPieceForQueen(row, col, newRow, newCol);
-                        board.movePiece(row, col, newRow, newCol);
-                        board.capturePiece(capturedPos[0], capturedPos[1]);
-
-                        // Check for promotion
-                        Piece movedPiece = board.getPiece(newRow, newCol);
-                        if (movedPiece instanceof Pawn && 
-                            ((movedPiece.getColor().equals("white") && newRow == 0) ||
-                             (movedPiece.getColor().equals("black") && newRow == Board.SIZE - 1))) {
-                            movedPiece = new Queen(movedPiece.getColor(), newRow, newCol);
-                            board.movePiece(newRow, newCol, newRow, newCol); // Update piece
-                        }
-
-                        // Recurse for further captures
-                        findCaptureSequenceRecursive(movedPiece, newRow, newCol, currentSequence, bestSequence);
-
-                        // Undo the move
-                        board.setBoardState(originalState);
-                        currentSequence.remove(currentSequence.size() - 1);
                         foundCapture = true;
+                        
+                        // Sauvegarder l'état actuel
+                        String[][] savedState = board.getBoardState();
+                        
+                        // Effectuer le mouvement
+                        if (piece instanceof Queen) {
+                            int[] capturedPos = findCapturedPieceForQueen(row, col, newRow, newCol);
+                            board.movePiece(row, col, newRow, newCol);
+                            board.capturePiece(capturedPos[0], capturedPos[1]);
+                        } else {
+                            int middleRow = (row + newRow) / 2;
+                            int middleCol = (col + newCol) / 2;
+                            board.movePiece(row, col, newRow, newCol);
+                            board.capturePiece(middleRow, middleCol);
+                        }
+                        
+                        // Vérifier les captures supplémentaires
+                        Piece movedPiece = board.getPiece(newRow, newCol);
+                        if (movedPiece != null) {
+                            findCaptureSequenceRecursive(movedPiece, newRow, newCol, 
+                                                      currentSequence, bestSequence, originalState);
+                        }
+                        
+                        // Restaurer l'état original
+                        board.setBoardState(savedState);
+                        currentSequence.remove(currentSequence.size() - 1);
                     }
-                    newRow += dir[0];
-                    newCol += dir[1];
                 }
             } else {
                 int newRow = row + dir[0];
@@ -253,72 +216,123 @@ public class Game {
                     if (piece.canCapture(newRow, newCol, board)) {
                         Move move = new Move(row, col, newRow, newCol);
                         currentSequence.add(move);
-
-                        // Simulate the move
+                        foundCapture = true;
+                        
+                        // Sauvegarder l'état actuel
+                        String[][] savedState = board.getBoardState();
+                        
+                        // Effectuer le mouvement
                         int middleRow = (row + newRow) / 2;
                         int middleCol = (col + newCol) / 2;
                         board.movePiece(row, col, newRow, newCol);
                         board.capturePiece(middleRow, middleCol);
-
-                        // Check for promotion
+                        
+                        // Vérifier les captures supplémentaires
                         Piece movedPiece = board.getPiece(newRow, newCol);
-                        if (movedPiece instanceof Pawn && 
-                            ((movedPiece.getColor().equals("white") && newRow == 0) ||
-                             (movedPiece.getColor().equals("black") && newRow == Board.SIZE - 1))) {
-                            movedPiece = new Queen(movedPiece.getColor(), newRow, newCol);
-                            board.movePiece(newRow, newCol, newRow, newCol); // Update piece
+                        if (movedPiece != null) {
+                            findCaptureSequenceRecursive(movedPiece, newRow, newCol, 
+                                                      currentSequence, bestSequence, originalState);
                         }
-
-                        // Recurse for further captures
-                        findCaptureSequenceRecursive(movedPiece, newRow, newCol, currentSequence, bestSequence);
-
-                        // Undo the move
-                        board.setBoardState(originalState);
+                        
+                        // Restaurer l'état original
+                        board.setBoardState(savedState);
                         currentSequence.remove(currentSequence.size() - 1);
-                        foundCapture = true;
                     }
                 }
             }
         }
-
+        
         if (!foundCapture && currentSequence.size() > bestSequence.size()) {
             bestSequence.clear();
             bestSequence.addAll(currentSequence);
         }
     }
 
-    private List<Move> findAllCaptures() {
-        List<Move> captures = new ArrayList<>();
+    private void executeCaptureSequence(List<Move> sequence) {
+        for (Move move : sequence) {
+            try {
+                Thread.sleep(1000); // Pause entre chaque capture
+                
+                Piece piece = board.getPiece(move.getFromRow(), move.getFromCol());
+                if (piece instanceof Queen) {
+                    int[] capturedPos = findCapturedPieceForQueen(move.getFromRow(), move.getFromCol(), 
+                                                                move.getToRow(), move.getToCol());
+                    if (capturedPos != null) {
+                        board.movePiece(move.getFromRow(), move.getFromCol(), 
+                                      move.getToRow(), move.getToCol());
+                        board.capturePiece(capturedPos[0], capturedPos[1]);
+                    }
+                } else {
+                    int middleRow = (move.getFromRow() + move.getToRow()) / 2;
+                    int middleCol = (move.getFromCol() + move.getToCol()) / 2;
+                    board.movePiece(move.getFromRow(), move.getFromCol(), 
+                                  move.getToRow(), move.getToCol());
+                    board.capturePiece(middleRow, middleCol);
+                }
+                
+                SwingUtilities.invokeLater(() -> {
+                    view.drawBoard(board);
+                    updateStatus();
+                });
+            } catch (InterruptedException e) {
+                Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, e);
+            }
+        }
+        switchPlayer();
+    }
+
+    private void switchPlayer() {
+        currentPlayer = currentPlayer.equals("white") ? "black" : "white";
+        isHumanTurn = currentPlayer.equals(humanPlayerColor);
+        checkGameOver();
+        
+        if (!isHumanTurn && !gameOver) {
+            computerTurn();
+        }
+    }
+
+    private void checkGameOver() {
+        boolean whiteHasPieces = false;
+        boolean blackHasPieces = false;
+        boolean whiteCanMove = false;
+        boolean blackCanMove = false;
+
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
                 Piece piece = board.getPiece(row, col);
-                if (piece != null && piece.getColor().equals(currentPlayer)) {
-                    int[][] directions = piece.getCaptureDirections();
-                    for (int[] dir : directions) {
-                        if (piece instanceof Queen) {
-                            int newRow = row + dir[0];
-                            int newCol = col + dir[1];
-                            while (newRow >= 0 && newRow < Board.SIZE && newCol >= 0 && newCol < Board.SIZE) {
-                                if (piece.canCapture(newRow, newCol, board)) {
-                                    captures.add(new Move(row, col, newRow, newCol));
-                                }
-                                newRow += dir[0];
-                                newCol += dir[1];
-                            }
-                        } else {
-                            int newRow = row + dir[0];
-                            int newCol = col + dir[1];
-                            if (newRow >= 0 && newRow < Board.SIZE && newCol >= 0 && newCol < Board.SIZE) {
-                                if (piece.canCapture(newRow, newCol, board)) {
-                                    captures.add(new Move(row, col, newRow, newCol));
-                                }
-                            }
+                if (piece != null) {
+                    if (piece.getColor().equals("white")) {
+                        whiteHasPieces = true;
+                        if (piece.hasAvailableMoves(board)) {
+                            whiteCanMove = true;
+                        }
+                    } else {
+                        blackHasPieces = true;
+                        if (piece.hasAvailableMoves(board)) {
+                            blackCanMove = true;
                         }
                     }
                 }
             }
         }
-        return captures;
+
+        if (!whiteHasPieces || (currentPlayer.equals("white") && !whiteCanMove)) {
+            gameOver = true;
+            winner = "black";
+        } else if (!blackHasPieces || (currentPlayer.equals("black") && !blackCanMove)) {
+            gameOver = true;
+            winner = "white";
+        }
+    }
+
+    public void endGame() {
+        SwingUtilities.invokeLater(() -> {
+            if (winner.equals(humanPlayerColor)) {
+                view.showMessage("Félicitations! Vous avez gagné!");
+            } else {
+                view.showMessage("L'ordinateur a gagné! Vous avez perdu.");
+            }
+        });
     }
 
     private void makeRandomMove() {
@@ -383,40 +397,6 @@ public class Game {
         makeMediumMove();
     }
 
-    private void checkGameOver() {
-        boolean whiteHasPieces = false;
-        boolean blackHasPieces = false;
-        boolean whiteCanMove = false;
-        boolean blackCanMove = false;
-
-        for (int row = 0; row < Board.SIZE; row++) {
-            for (int col = 0; col < Board.SIZE; col++) {
-                Piece piece = board.getPiece(row, col);
-                if (piece != null) {
-                    if (piece.getColor().equals("white")) {
-                        whiteHasPieces = true;
-                        if (piece.hasAvailableMoves(board)) {
-                            whiteCanMove = true;
-                        }
-                    } else {
-                        blackHasPieces = true;
-                        if (piece.hasAvailableMoves(board)) {
-                            blackCanMove = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!whiteHasPieces || !whiteCanMove) {
-            gameOver = true;
-            winner = "black";
-        } else if (!blackHasPieces || !blackCanMove) {
-            gameOver = true;
-            winner = "white";
-        }
-    }
-
     public boolean isGameOver() { return gameOver; }
     public String getWinner() { return winner; }
     public String getCurrentPlayer() { return currentPlayer; }
@@ -432,15 +412,5 @@ public class Game {
             status += " (Tour de l'ordinateur)";
         }
         view.setStatus(status);
-    }
-
-    public void endGame() {
-        String winner = getWinner();
-        if (winner.equals(humanPlayerColor)) {
-            view.showMessage("Félicitations! Vous avez gagné!");
-        } else {
-            view.showMessage("L'ordinateur a gagné! Vous avez perdu!");
-        }
-        gameOver = true;
     }
 }

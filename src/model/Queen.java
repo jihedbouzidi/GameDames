@@ -7,13 +7,12 @@ public class Queen extends Piece {
 
     @Override
     protected int[][] getCaptureDirections() {
-        // All diagonal directions for captures (forward and backward)
+        // La dame peut capturer dans les 4 directions
         return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
     }
 
     @Override
     protected int[][] getMoveDirections() {
-        // All diagonal directions for moves
         return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
     }
 
@@ -75,19 +74,25 @@ public class Queen extends Piece {
         int currentCol = col + colStep;
         
         Piece capturedPiece = null;
+        int captureRow = -1, captureCol = -1;
         
         while (currentRow != toRow && currentCol != toCol) {
             Piece piece = board.getPiece(currentRow, currentCol);
+            
             if (piece != null) {
                 if (capturedPiece != null) {
-                    return false; // More than one piece in the path
+                    return false; // Plus d'une pièce sur le chemin
                 }
-                if (!piece.getColor().equals(color)) {
-                    capturedPiece = piece;
+                
+                if (piece.getColor().equals(color)) {
+                    return false; // Pièce de la même couleur
                 } else {
-                    return false; // Own piece in the path
+                    capturedPiece = piece;
+                    captureRow = currentRow;
+                    captureCol = currentCol;
                 }
             }
+            
             currentRow += rowStep;
             currentCol += colStep;
         }
@@ -98,17 +103,41 @@ public class Queen extends Piece {
     @Override
     public boolean hasAvailableCaptures(Board board) {
         for (int[] dir : getCaptureDirections()) {
-            int newRow = row + dir[0];
-            int newCol = col + dir[1];
-            
-            while (newRow >= 0 && newRow < Board.SIZE && newCol >= 0 && newCol < Board.SIZE) {
+            for (int distance = 1; distance < Board.SIZE; distance++) {
+                int newRow = row + dir[0] * distance;
+                int newCol = col + dir[1] * distance;
+                
+                if (newRow < 0 || newRow >= Board.SIZE || newCol < 0 || newCol >= Board.SIZE) {
+                    break;
+                }
+                
                 if (canCapture(newRow, newCol, board)) {
                     return true;
                 }
-                newRow += dir[0];
-                newCol += dir[1];
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean hasAvailableMoves(Board board) {
+        // Vérifie les mouvements simples
+        for (int[] dir : getMoveDirections()) {
+            for (int distance = 1; distance < Board.SIZE; distance++) {
+                int newRow = row + dir[0] * distance;
+                int newCol = col + dir[1] * distance;
+                
+                if (newRow < 0 || newRow >= Board.SIZE || newCol < 0 || newCol >= Board.SIZE) {
+                    break;
+                }
+                
+                if (isValidMove(newRow, newCol, board)) {
+                    return true;
+                }
+            }
+        }
+        
+        // Vérifie les captures
+        return hasAvailableCaptures(board);
     }
 }
