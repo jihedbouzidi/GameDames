@@ -7,11 +7,13 @@ public class Queen extends Piece {
 
     @Override
     protected int[][] getCaptureDirections() {
+        // All diagonal directions for captures (forward and backward)
         return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
     }
 
     @Override
     protected int[][] getMoveDirections() {
+        // All diagonal directions for moves
         return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
     }
 
@@ -73,25 +75,19 @@ public class Queen extends Piece {
         int currentCol = col + colStep;
         
         Piece capturedPiece = null;
-        int captureRow = -1, captureCol = -1;
         
         while (currentRow != toRow && currentCol != toCol) {
             Piece piece = board.getPiece(currentRow, currentCol);
-            
             if (piece != null) {
                 if (capturedPiece != null) {
-                    return false;
+                    return false; // More than one piece in the path
                 }
-                
                 if (!piece.getColor().equals(color)) {
                     capturedPiece = piece;
-                    captureRow = currentRow;
-                    captureCol = currentCol;
                 } else {
-                    return false;
+                    return false; // Own piece in the path
                 }
             }
-            
             currentRow += rowStep;
             currentCol += colStep;
         }

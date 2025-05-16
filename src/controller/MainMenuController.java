@@ -40,7 +40,7 @@ public class MainMenuController {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                // Choix de la couleur
+                // Color choice
                 Object[] colorOptions = {"Blancs", "Noirs"};
                 int colorChoice = JOptionPane.showOptionDialog(
                     view, 
@@ -57,7 +57,7 @@ public class MainMenuController {
                 
                 String playerColor = (colorChoice == 0) ? "white" : "black";
                 
-                // Choix de la difficulté
+                // Difficulty choice
                 Object[] difficultyOptions = {"Facile", "Moyenne", "Difficile"};
                 int difficultyChoice = JOptionPane.showOptionDialog(
                     view, 
@@ -73,10 +73,10 @@ public class MainMenuController {
                 if (difficultyChoice == JOptionPane.CLOSED_OPTION) return;
                 
                 String difficulty = (difficultyChoice == 0) ? "easy" : 
-                                  (difficultyChoice == 1) ? "medium" : "hard";
+                                   (difficultyChoice == 1) ? "medium" : "hard";
                 
-                // Création de la partie
-                Game game = new Game(playerColor, difficulty, true);
+                // Create the game
+                Game game = new Game(playerColor, difficulty);
                 GameView gameView = new GameView();
                 
                 new GameController(gameView, db, player, game);

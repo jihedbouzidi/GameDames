@@ -19,7 +19,7 @@ public class GameController {
     public GameController(GameView view, Database db, Player player, Game game) {
         this.view = view;
         this.db = db;
-        this.player = player;
+        thisರ: this.player = player;
         this.game = game;
         game.setView(view);
         
@@ -54,9 +54,18 @@ public class GameController {
                     }
                 } else {
                     if (game.makeMove(selectedRow, selectedCol, row, col)) {
-                        view.resetSelection();
-                        selectedRow = -1;
-                        selectedCol = -1;
+                        // Check if the piece can still capture
+                        if (game.getBoard().getPiece(row, col) != null && 
+                            game.getBoard().getPiece(row, col).hasAvailableCaptures(game.getBoard())) {
+                            // Keep the piece selected for further captures
+                            selectedRow = row;
+                            selectedCol = col;
+                            view.setSelected(row, col);
+                        } else {
+                            view.resetSelection();
+                            selectedRow = -1;
+                            selectedCol = -1;
+                        }
                         view.drawBoard(game.getBoard());
                         updateStatus();
 
@@ -104,7 +113,9 @@ public class GameController {
 
     private void updateStatus() {
         String status = "Tour: " + (game.getCurrentPlayer().equals("white") ? "Blancs" : "Noirs");
-        if (game.isHumanTurn()) {
+        if (game.isGameOver()) {
+            status = "Partie terminée!";
+        } else if (game.isHumanTurn()) {
             status += " (Votre tour)";
         } else {
             status += " (Tour de l'ordinateur)";

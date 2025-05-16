@@ -147,14 +147,14 @@ public class Database {
             pstmt.setString(4, gameState.getCurrentPlayer());
             
             return pstmt.executeUpdate() > 0;
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             System.err.println("Game save failed: " + e.getMessage());
         }
         
         return false;
     }
 
-    public List<GameState> loadSavedGames(String playerId) {
+    public List<GameState> loadSavedGames(String playerId) throws SQLException{
         List<GameState> games = new ArrayList<>();
         String sql = "SELECT * FROM saved_games WHERE player_id = ? ORDER BY save_date DESC";
         
@@ -174,10 +174,11 @@ public class Database {
                     boardState,
                     rs.getString("current_player"),
                     rs.getTimestamp("save_date").toString()
+                ));
             }
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             System.err.println("Loading games failed: " + e.getMessage());
-        }
+        } 
         
         return games;
     }

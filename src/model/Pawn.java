@@ -8,11 +8,7 @@ public class Pawn extends Piece {
     @Override
     protected int[][] getCaptureDirections() {
         // Peut capturer en avant et en arrière
-        if (color.equals("white")) {
-            return new int[][]{{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
-        } else {
-            return new int[][]{{2, -2}, {2, 2}, {-2, -2}, {-2, 2}};
-        }
+        return new int[][]{{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
     }
 
     @Override

@@ -1,12 +1,13 @@
 package model;
+import java.io.IOException;
 
 public class GameState {
-    private int gameId;
-    private String playerId;
-    private String playerPawn;
-    private String[][] boardState;
-    private String currentPlayer;
-    private String saveDate;
+    private final int gameId;
+    private final String playerId;
+    private final String playerPawn;
+    private final String[][] boardState;
+    private final String currentPlayer;
+    private final String saveDate;
 
     public GameState(int gameId, String playerId, String playerPawn, String[][] boardState, String currentPlayer, String saveDate) {
         this.gameId = gameId;
@@ -25,12 +26,12 @@ public class GameState {
     public String getCurrentPlayer() { return currentPlayer; }
     public String getSaveDate() { return saveDate; }
 
-    public String toJson() throws JsonProcessingException {
+    public String toJson() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(this);
     }
 
-    public static GameState fromJson(String json) throws JsonProcessingException {
+    public static GameState fromJson(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, GameState.class);
     }

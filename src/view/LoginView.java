@@ -206,10 +206,11 @@ public class LoginView extends JFrame {
         Color originalColor = button.getBackground();
         
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 animateButtonColor(button, originalColor, originalColor.brighter(), 200);
             }
-
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 animateButtonColor(button, originalColor.brighter(), originalColor, 200);
             }
