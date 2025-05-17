@@ -181,6 +181,7 @@ public class StatsView extends JFrame {
         Color originalColor = button.getBackground();
         
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 animateButtonColor(button, originalColor, originalColor.brighter(), 200);
             }

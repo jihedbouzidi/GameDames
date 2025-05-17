@@ -108,7 +108,7 @@ public class Game {
     public void computerTurn() {
         new Thread(() -> {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 
                 List<Move> captureSequence = findBestCaptureSequence();
                 if (!captureSequence.isEmpty()) {

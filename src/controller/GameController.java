@@ -5,14 +5,15 @@ import java.awt.event.MouseEvent;
 import javax.swing.JOptionPane;
 import model.Database;
 import model.Game;
+import model.Piece;
 import model.Player;
 import view.GameView;
 
 public class GameController {
-    private GameView view;
-    private Database db;
-    private Player player;
-    private Game game;
+    private final GameView view;
+    private final Database db;
+    private final Player player;
+    private final Game game;
     private int selectedRow = -1;
     private int selectedCol = -1;
 
@@ -118,5 +119,13 @@ public class GameController {
             status += " (Tour de l'ordinateur)";
         }
         view.setStatus(status);
+    }
+
+    public Database getDb() {
+        return db;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

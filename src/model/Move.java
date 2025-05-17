@@ -1,10 +1,10 @@
 package model;
 
 public class Move {
-    private int fromRow;
-    private int fromCol;
-    private int toRow;
-    private int toCol;
+    private final int fromRow;
+    private final int fromCol;
+    private final int toRow;
+    private final int toCol;
 
     public Move(int fromRow, int fromCol, int toRow, int toCol) {
         this.fromRow = fromRow;

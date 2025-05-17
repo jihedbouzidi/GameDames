@@ -7,11 +7,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class LoginView extends JFrame {
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JButton loginButton;
-    private JButton registerButton;
-    private JButton quitButton; // Nouveau bouton Quitter
+    private final JTextField usernameField;
+    private final JPasswordField passwordField;
+    private final JButton loginButton;
+    private final JButton registerButton;
+    private final JButton quitButton; 
 
     public LoginView() {
         setTitle("Jeu de Dames - Connexion");

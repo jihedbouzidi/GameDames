@@ -7,9 +7,10 @@ import model.Player;
 import view.StatsView;
 
 public class StatsController {
-    private StatsView view;
-    private Database db;
-    private Player player;
+    private final StatsView view;
+
+    private final Database db;
+    private final Player player;
 
     public StatsController(StatsView view, Database db, Player player) {
         this.view = view;
@@ -24,6 +25,14 @@ public class StatsController {
         view.setDraws(0);
         
         view.addCloseListener(new CloseListener());
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public Database getDb() {
+        return db;
     }
 
     class CloseListener implements ActionListener {

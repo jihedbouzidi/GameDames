@@ -74,7 +74,8 @@ public class Queen extends Piece {
         int currentCol = col + colStep;
         
         Piece capturedPiece = null;
-        int captureRow = -1, captureCol = -1;
+        int captureRow = -1;
+        int captureCol = -1;
         
         while (currentRow != toRow && currentCol != toCol) {
             Piece piece = board.getPiece(currentRow, currentCol);

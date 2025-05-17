@@ -114,14 +114,21 @@ public class Board {
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
                 String pieceStr = state[row][col];
-                if (pieceStr.equals("white")) {
-                    grid[row][col] = new Pawn("white", row, col);
-                } else if (pieceStr.equals("black")) {
-                    grid[row][col] = new Pawn("black", row, col);
-                } else if (pieceStr.equals("white_queen")) {
-                    grid[row][col] = new Queen("white", row, col);
-                } else if (pieceStr.equals("black_queen")) {
-                    grid[row][col] = new Queen("black", row, col);
+                switch (pieceStr) {
+                    case "white":
+                        grid[row][col] = new Pawn("white", row, col);
+                        break;
+                    case "black":
+                        grid[row][col] = new Pawn("black", row, col);
+                        break;
+                    case "white_queen":
+                        grid[row][col] = new Queen("white", row, col);
+                        break;
+                    case "black_queen":
+                        grid[row][col] = new Queen("black", row, col);
+                        break;
+                    default:
+                        break;
                 }
             }
         }

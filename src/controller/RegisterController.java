@@ -6,8 +6,8 @@ import model.Database;
 import view.RegisterView;
 
 public class RegisterController {
-    private RegisterView view;
-    private Database db;
+    private final RegisterView view;
+    private final Database db;
 
     public RegisterController(RegisterView view, Database db) {
         this.view = view;

@@ -1,10 +1,10 @@
 package model;
 
 public class Player {
-    private String username;
+    private final String  username;
     private String password;
-    private String firstName;
-    private String lastName;
+    private final String firstName;
+    private final String lastName;
     private String avatar;
 
     public Player(String username, String password, String firstName, String lastName, String avatar) {

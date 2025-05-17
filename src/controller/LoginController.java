@@ -9,9 +9,9 @@ import view.MainMenuView;
 import view.RegisterView;
 
 public class LoginController {
-    private LoginView loginView;
+    private final LoginView loginView;
     private RegisterView registerView;
-    private Database db;
+    private final Database db;
 
     public LoginController(LoginView view, Database db) {
         this.loginView = view;
@@ -27,7 +27,7 @@ public class LoginController {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
             
-            if (username.isEmpty() || password.isEmpty()) {
+            if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
                 loginView.showMessage("Veuillez remplir tous les champs");
                 return;
             }

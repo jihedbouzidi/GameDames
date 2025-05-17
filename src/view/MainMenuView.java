@@ -7,11 +7,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class MainMenuView extends JFrame {
-    private JButton newGameButton;
-    private JButton loadGameButton;
-    private JButton statsButton;
-    private JButton profileButton;
-    private JButton quitButton;
+    private final JButton newGameButton;
+    private final JButton loadGameButton;
+    private final JButton statsButton;
+    private final JButton profileButton;
+    private final JButton quitButton;
 
     public MainMenuView() {
         setTitle("Jeu de Dames - Menu Principal");
@@ -166,11 +166,13 @@ public class MainMenuView extends JFrame {
         Color originalColor = button.getBackground();
         
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 animateButtonColor(button, originalColor, originalColor.brighter(), 200);
                 button.setFont(new Font("Segoe UI", Font.BOLD, 18)); // Texte légèrement agrandi au survol
             }
 
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 animateButtonColor(button, originalColor.brighter(), originalColor, 200);
                 button.setFont(new Font("Segoe UI", Font.BOLD, 16));

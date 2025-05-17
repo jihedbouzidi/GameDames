@@ -7,9 +7,9 @@ import model.Player;
 import view.ProfileView;
 
 public class ProfileController {
-    private ProfileView view;
+    private final ProfileView view;
     public Database db;
-    private Player player;
+    private final Player player;
 
     public ProfileController(ProfileView view, Database db, Player player) {
         this.view = view;

@@ -7,12 +7,12 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class RegisterView extends JFrame {
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-    private JTextField firstNameField;
-    private JTextField lastNameField;
-    private JButton registerButton;
-    private JButton cancelButton;
+    private final JTextField usernameField;
+    private final JPasswordField passwordField;
+    private final JTextField firstNameField;
+    private final JTextField lastNameField;
+    private final JButton registerButton;
+    private final JButton cancelButton;
 
     public RegisterView() {
         setTitle("Jeu de Dames - Inscription");
@@ -204,10 +204,12 @@ public class RegisterView extends JFrame {
         Color originalColor = button.getBackground();
         
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 animateButtonColor(button, originalColor, originalColor.brighter(), 200);
             }
 
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 animateButtonColor(button, originalColor.brighter(), originalColor, 200);
             }

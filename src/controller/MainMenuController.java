@@ -1,5 +1,6 @@
 package controller;
 
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
@@ -12,9 +13,9 @@ import view.ProfileView;
 import view.StatsView;
 
 public class MainMenuController {
-    private MainMenuView view;
-    private Database db;
-    private Player player;
+    private final MainMenuView view;
+    private final Database db;
+    private final Player player;
 
     public MainMenuController(MainMenuView view, Database db, Player player) {
         this.view = view;
@@ -84,7 +85,7 @@ public class MainMenuController {
                 gameView.setVisible(true);
                 view.dispose();
                 
-            } catch (Exception ex) {
+            } catch (HeadlessException ex) {
                 JOptionPane.showMessageDialog(
                     view, 
                     "Erreur lors de la création de la partie: " + ex.getMessage(), 
